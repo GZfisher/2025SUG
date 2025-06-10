@@ -1,2 +1,2 @@
 # 2025SUG
-For pharmaSUG 202
+For pharmaSUG 2025

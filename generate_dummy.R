@@ -138,3 +138,5 @@ md.pattern(adqs)
 wide_data <- pivot_wider(adqs, id_cols = c(SUBJID, REGIONN, TRT01PN, TRT01P, BLBMIG1N, BASE, DCTFL), 
                          names_from = AVISIT, values_from = CHG)
 md.pattern(wide_data)
+
+# save(adqs, adsl, data_complete, wide_data, file = "dummy.RData")

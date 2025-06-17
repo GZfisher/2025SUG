@@ -63,66 +63,48 @@ prelim.norm.new <- function (x)
        layer = layer, nlayer = nlayer)
 }
 
-# MCMC imputation
-step1 <- function(data, #pre_data, wocf, 
-                  nimpute, emmaxits, maxits, seed) {
-  s <- prelim.norm.new(data) #do preliminary manipulations
-  thetahat <- em.norm(s, maxits = emmaxits) #find the MLE for a starting value
-  getparam.norm(s,thetahat) # look at result
-  rngseed(seed) #set random number generator seed
-  theta <- mda_r(s,thetahat,steps=maxits,showits=TRUE)
-  # theta <- mda.norm(s,thetahat,steps=100,showits=TRUE) # take 100 steps
-  getparam.norm(s,theta) # look at result
+# MCMC imputation function
+step1 <- function(data, nimpute, emmaxits, maxits, seed) {
+  s <- prelim.norm.new(data)     # Prepare data for norm package
+  thetahat <- em.norm(s, maxits = emmaxits)   # Get initial parameters using EM algorithm
+  rngseed(seed)                  # Set random seed
+  theta <- mda_r(s, thetahat, steps = maxits, showits = TRUE)   # Run MCMC to update parameters
   
   all_mono_new <- data.frame(data)
-  all_mono_new[,"impno"] <- 0
+  all_mono_new[,"impno"] <- 0   # Add imputation indicator for original data
+  
   for (i in 1:nimpute) {
-    all_mono_one_time <- data.frame(imp.norm(s,theta,data))
+    all_mono_one_time <- data.frame(imp.norm(s, theta, data))   # Impute missing values
+    # Ensure monotone structure by setting post-missing values to NA for each row
     for (j in 1:nrow(data)) {
       last_num <- max(which(!is.na(data[j,])))
-      # last_nums <- c(last_nums,last_num)
       if (last_num < ncol(data)) {
-        all_mono_one_time[j,(last_num+1):ncol(data)] <- "is.na<-"(all_mono_one_time[j,(last_num+1):ncol(data)])
+        all_mono_one_time[j, (last_num+1):ncol(data)] <- "is.na<-"(all_mono_one_time[j, (last_num+1):ncol(data)])
       }
-      # all_mono_one_time[j,4:32][all_mono_one_time[j,4:32]>3]=3
-      # all_mono_one_time[j,4:32][all_mono_one_time[j,4:32]<0]=0
     }
-    all_mono_one_time$impno <- i
-    all_mono_new <- rbind(all_mono_new, all_mono_one_time)
-    print(paste0("MCMC imputation: ",i,"..."))
+    all_mono_one_time$impno <- i   # Add imputation number
+    all_mono_new <- rbind(all_mono_new, all_mono_one_time)  # Append result
+    print(paste0("MCMC imputation: ", i, "..."))
   }
-  
-  # add some information to the monotone-pattern data
-  # mono_pre0 <- cbind(pre_data[,c("PARAM","TRT01P","USUBJID","DRMI")], all_mono_new)
-  # mono_pre1 <- merge(mono_pre0, wocf, all.x = TRUE)
-  
-  # MCMC_r <- mono_pre1 %>% filter(impno != 0) %>% arrange(impno,TRT01PN,TRT01P,USUBJID)
-  # for monotone regression
-  # mono <- MCMC_r %>% filter(is.na(WOCF))
-  
-  # not for monotone regression
-  # mono_wocf <- MCMC_r %>% filter(WOCF == 'Y')
   return(all_mono_new)
 }
 
-# monotone regression
+# Monotone regression imputation using mice
 step2 <- function(data, nimpute, method, formula_list, seed) {
-  
-  # set to factor variable for some numeric variable
-  # data$TRT01PN <- as.factor(data$TRT01PN)
-  # data$REGIONN <- as.factor(data$REGIONN)
-  # data$BLBMIG2N <- as.factor(data$BLBMIG2N)
   
   reg <- list()
   for (i in 1:nimpute) {
     seed = seed + 1
-    reg[[paste0("x",i)]] <- data %>% filter(impno==i)
+    # Filter data for current imputation
+    reg[[paste0("x", i)]] <- data %>% filter(impno == i)
+    # Sequentially apply regression formulas
     for (j in 1:length(formula_list)) {
-      x <- mice::mice(reg[[paste0("x",i)]],m=1,method = method,formulas = formula_list[j],seed=seed)
-      reg[[paste0("x",i)]] <- mice::complete(x)
+      x <- mice::mice(reg[[paste0("x", i)]], m = 1, method = method, 
+                      formulas = formula_list[j], seed = seed)
+      reg[[paste0("x", i)]] <- mice::complete(x)
     }
   }
   
-  complete <- do.call(rbind, reg)
+  complete <- do.call(rbind, reg)   # Combine imputed datasets
   return(complete)
 }

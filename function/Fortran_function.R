@@ -219,43 +219,22 @@ is2n <- function(d, theta, p, psi, n, x, npatt, r, mdpst, nmdp, sj, last, oc, mc
   junk <- norm_func
   # Loop over the patterns
   tt <- theta
-  # d=s$d
-  # # theta <- thetahat
-  # p=s$p
-  # psi=s$psi
-  # npatt=s$npatt
-  # r=s$r
-  # npatt=71
   for (patt in 1:npatt) {
-    # patt=10
-
-    # last=s$last
-    # mc=integer(p)
-    # oc=integer(p)
     # Swap the observations based on the pattern
     tt <- swpobs(d, tt, p, psi, npatt, r, patt)
-    # tt <- .Fortran("swpobs",d, tt, p, psi, npatt, r, patt,PACKAGE = "norm")[[2]]
     # Get the missing columns and the number of missing columns
     res_mc <- gtmc(p, npatt, r, patt, mc, last[patt])
     mc <- res_mc$mc
     nmc <- res_mc$nmc
-    # # mc_res <- .Fortran("gtmc",p,npatt,r,patt,mc,0,last(patt))
-    # # mc <- mc_res[[5]]
-    # # nmc <- mc_res[[6]]
-    # # Get the observed columns and the number of observed columns
+    # Get the observed columns and the number of observed columns
     res_oc <- gtoc(p, npatt, r, patt, oc, last[patt])
     oc <- res_oc$oc
     noc <- res_oc$noc
-    # # Extract the submatrix of theta corresponding to the columns of mc
+    # Extract the submatrix of theta corresponding to the columns of mc
     cc <- sigex(d, tt, cc, p, psi, mc, nmc)
-    # # cc <- .Fortran("sigex",d, tt, cc, p, psi, mc, nmc,PACKAGE = "norm")[[3]]
-    # # Perform Cholesky decomposition on the submatrix of theta
-    # # cc <- .Fortran("chols",d,cc,p,psi,mc,nmc,PACKAGE = "norm")[[2]]
+    # Perform Cholesky decomposition on the submatrix of theta
     cc <- chols(d,cc,p,psi,mc,nmc)
-    # # Loop over the rows of the pattern
-    # # mdpst=s$mdpst
-    # # nmdp=s$nmdp
-    # # z=double(s$p)
+    # Loop over the rows of the pattern
     for (i in (mdpst[patt]:(mdpst[patt] + nmdp[patt] - as.double(1)))) {
       # Loop over the columns of mc
       if (nmc >=1){
@@ -398,25 +377,26 @@ ps2n <- function(p, psi, n, x, npatt, r, mdpst, nmdp, oc, mc, nmon, sj, nlayer, 
 }
 
 # complete I-step and P-step
-mda_r <- function (s, theta, steps = 1, showits = FALSE) 
-{
+mda_r <- function (s, theta, steps = 1, showits = FALSE)  {
   s$x <- .na.to.snglcode(s$x, as.double(999))
-  tobs <- tobsmn(s$p, s$psi, s$n, s$x, s$npatt, s$r, s$mdpst, 
-                  s$nmdp, s$last, integer(s$p), s$sj, s$layer, s$nlayer, s$d)
-  if (showits) 
+  tobs <- tobsmn(s$p, s$psi, s$n, s$x, s$npatt, s$r, s$mdpst,  
+                 s$nmdp, s$last, integer(s$p), s$sj, s$layer, s$nlayer, s$d)
+  if (showits)  
     cat(paste("Steps of Monotone Data Augmentation:", "\n"))
   for (i in 1:steps) {
-    if (showits) 
+    if (showits)  
       cat(paste(format(i), "...", sep = ""))
-    s$x <- is2n(s$d, theta, s$p, s$psi, s$n, 
-                s$x, s$npatt, s$r, s$mdpst, s$nmdp, s$sj, s$last, 
+    # I-step: impute missing data given current parameters
+    s$x <- is2n(s$d, theta, s$p, s$psi, s$n,  
+                s$x, s$npatt, s$r, s$mdpst, s$nmdp, s$sj, s$last,  
                 integer(s$p), integer(s$p), double(s$p), theta, rnorm(n=1))
-    theta <- ps2n(s$p, s$psi, s$n, s$x, s$npatt, 
-                  s$r, s$mdpst, s$nmdp, integer(s$p), integer(s$p), 
-                  s$nmon, s$sj, s$nlayer, s$d, tobs, numeric(s$d), 
+    # P-step: update parameters given completed data
+    theta <- ps2n(s$p, s$psi, s$n, s$x, s$npatt,  
+                  s$r, s$mdpst, s$nmdp, integer(s$p), integer(s$p),  
+                  s$nmon, s$sj, s$nlayer, s$d, tobs, numeric(s$d),  
                   numeric(s$d), numeric(s$p + 1), numeric(s$d))
   }
-  if (showits) 
+  if (showits)  
     cat("\n")
   theta
 }

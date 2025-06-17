@@ -64,7 +64,8 @@ prelim.norm.new <- function (x)
 }
 
 # MCMC imputation
-step1 <- function(data, pre_data, wocf, nimpute, emmaxits, maxits, seed) {
+step1 <- function(data, #pre_data, wocf, 
+                  nimpute, emmaxits, maxits, seed) {
   s <- prelim.norm.new(data) #do preliminary manipulations
   thetahat <- em.norm(s, maxits = emmaxits) #find the MLE for a starting value
   getparam.norm(s,thetahat) # look at result
@@ -78,12 +79,10 @@ step1 <- function(data, pre_data, wocf, nimpute, emmaxits, maxits, seed) {
   for (i in 1:nimpute) {
     all_mono_one_time <- data.frame(imp.norm(s,theta,data))
     for (j in 1:nrow(data)) {
-      no_missing_col <- colnames(data)[!is.na(data)[j,]]
-      last_visit <- as.integer(gsub(pattern = 'VISIT', replacement = "", x = no_missing_col[length(no_missing_col)]))
-      last_num <- last_visit/2 + 1 + 3
+      last_num <- max(which(!is.na(data[j,])))
       # last_nums <- c(last_nums,last_num)
-      if (last_num < 32) {
-        all_mono_one_time[j,(last_num+1):32] <- "is.na<-"(all_mono_one_time[j,(last_num+1):32])
+      if (last_num < ncol(data)) {
+        all_mono_one_time[j,(last_num+1):ncol(data)] <- "is.na<-"(all_mono_one_time[j,(last_num+1):ncol(data)])
       }
       # all_mono_one_time[j,4:32][all_mono_one_time[j,4:32]>3]=3
       # all_mono_one_time[j,4:32][all_mono_one_time[j,4:32]<0]=0
@@ -107,7 +106,7 @@ step1 <- function(data, pre_data, wocf, nimpute, emmaxits, maxits, seed) {
 }
 
 # monotone regression
-step2 <- function(data, nimpute, method, seed) {
+step2 <- function(data, nimpute, method, formula_list, seed) {
   
   # set to factor variable for some numeric variable
   # data$TRT01PN <- as.factor(data$TRT01PN)

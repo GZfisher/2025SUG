@@ -1,27 +1,86 @@
+# Load the R workspace file (assumed to contain 'wide_data' and related objects)
 load("dummy.RData")
 
-library(norm)
-library(dplyr)
+# Load necessary libraries for imputation and data manipulation
+library(norm)         # For normal-based multiple imputation models
+library(dplyr)        # For data manipulation (pipes, mutate, etc.)
+library(tidyverse)    # Includes data wrangling and visualization tools
+
+# Source custom R functions (user-defined; step-wise imputation and Fortran routines)
 source("function/two_step_imputation.R")
 source("function/Fortran_function.R")
 
-convert_imp <- function(data, ref) {
-  complete_all <- rbind(ori_data, data %>% select(USUBJID,PARAM,TRT01P,REGIONN,BLBMIG2N,starts_with("VISIT"),impno))
-  complete_long <<- complete_all %>% 
-    mutate(BASE=VISIT0) %>% 
-    pivot_longer(
-      cols = starts_with("VISIT"),
-      names_to = "AVISIT",
-      values_to = "AVAL"
-    ) %>% 
-    filter(AVISIT != "VISIT0") %>% 
-    mutate(CHG=AVAL-BASE,id=paste0(USUBJID,AVISIT))
+# Add an indicator variable for imputation number (0 = original data) to the original data
+ori_data <- wide_data %>% mutate(impno = 0)
+
+# Define a function to convert data from wide to long format,
+# and compute AVAL (BASE + CHG) and a unique subject-visit ID
+convert_imp <- function(data, ori_data) {
+  # Combine original and new imputed data
+  complete_all <- rbind(ori_data, data)
   
-  complete_long$REGIONN <- relevel(factor(complete_long$REGIONN),ref=4)
-  complete_long$BLBMIG2N <- relevel(factor(complete_long$BLBMIG2N),ref=2)
-  complete_long$TRT01P <- relevel(factor(complete_long$TRT01P),ref=ref)
-  imp <- mice::as.mids(complete_long, .imp="impno", .id="id")
-  return(imp)
+  # Convert to long format: each row is a subject-visit value
+  complete_long <- complete_all %>%  
+    pivot_longer(
+      cols = starts_with("WEEK"),      # Select columns starting with 'WEEK'
+      names_to = "AVISIT",             # Column name for visit timepoint
+      values_to = "CHG"                # Value: change from baseline
+    ) %>%  
+    mutate(
+      AVAL = BASE + CHG,               # Calculate analysis value
+      id = paste0(SUBJID, AVISIT)      # Generate unique ID for each subject-visit
+    )
+  return(complete_long)
 }
 
-adqs_mono <- wide_data[,c("TRT01PN","REGIONN","BLBMIG1N","BASE",colnames(wide_data)[8:35])]
+# Select required columns and convert to numeric matrix for imputation
+# Includes covariates (TRT01PN, REGIONN, BMBLIG1N, BASE) and visit variables
+adqs_mono <- data.matrix(wide_data[,c("TRT01PN","REGIONN","BLBMIG1N","BASE",colnames(wide_data)[8:35])])
+
+# First step imputation: user-defined function, generates initial imputed datasets
+mono100 <- step1(adqs_mono, 100, 200, 100, seed = 89757)
+
+# Merge back key identifying variables to the imputed data
+mono100_added <- cbind(wide_data[,c("SUBJID","TRT01P","DCTFL")], mono100)
+
+# Define covariate columns for modeling
+cov_cols <- c('TRT01PN','REGIONN','BLBMIG1N','BASE')
+# Identify visit variables that need imputation or modeling
+visit_cols = colnames(mono100)[5:ncol(mono100)]
+
+# Initialize model formula list for each step
+formula_list <- c()
+
+# Dynamically construct the formula for each visit variable, 
+# each time adding the current visit as a predictor in subsequent formulas
+for (i in 1:length(visit_cols)) {
+  now_visit_col <- visit_cols[i]
+  
+  # If the current visit column has missing values:
+  if (any(is.na(mono100[[now_visit_col]]))) {
+    response <- now_visit_col
+    formula_list <- c(
+      formula_list, 
+      as.formula(paste0(response,"~",paste(cov_cols,collapse = '+')))
+    )
+    # Add this column to covariates for the next steps
+    cov_cols <- c(cov_cols, now_visit_col)
+  }
+  # If the column is complete, just add it to covariates
+  else {
+    cov_cols <- c(cov_cols, now_visit_col)
+  }
+}
+
+# Second step imputation: conditionally impute using formulas constructed above
+complete100 <- step2(mono100_added, 100, 'norm', formula_list, seed = 89757)
+
+# Convert final imputed data to long format for analysis/reporting
+complete_long <- convert_imp(complete100, ori_data)
+
+# Set reference levels for treatment variables as required for analysis
+complete_long$TRT01PN <- relevel(factor(complete_long$TRT01PN),ref=2)
+complete_long$TRT01P <- relevel(factor(complete_long$TRT01P),ref="PLACEBO")
+
+# Save final imputed/long data for further use (commented out here)
+# save(complete_long, complete100, mono100_added, file = "imputation.RData")

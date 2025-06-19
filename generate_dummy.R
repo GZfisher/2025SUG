@@ -53,9 +53,20 @@ long_data <- long_data %>% # mutate(AVAL = ifelse(AVISIT=="WEEK0", BASE, AVAL)) 
          )  %>% 
   filter(AVISITN != 0)
 
-# save the complete data and use the ANCOVA to get the results
+# Save the complete, fully observed data as data_complete
 data_complete <- long_data
 
+# Set the reference level for treatment group (numeric) as group 2
+data_complete$TRT01PN <- relevel(factor(data_complete$TRT01PN), ref = 2)
+
+# Set the reference level for treatment group (label) as "PLACEBO"
+data_complete$TRT01P <- relevel(factor(data_complete$TRT01P), ref = "PLACEBO")
+
+# Ensure BLBMIG1N and REGIONN are factors
+data_complete$BLBMIG1N <- factor(data_complete$BLBMIG1N)
+data_complete$REGIONN <- factor(data_complete$REGIONN)
+
+# use the ANCOVA to get the results
 ancova_nomi <- function(data) {
   lm_fit <- stats::lm(formula = stats::as.formula("CHG ~ TRT01PN + BASE + BLBMIG1N + REGIONN"), 
                       data = data)
@@ -72,7 +83,7 @@ ancova_nomi <- function(data) {
     # Compare dummy arms versus the control arm.
     method = "trt.vs.ctrl",
     # Take the arm factor from .ref_group as the control arm.
-    # ref = 2,
+    ref = 2,
     level = 0.95
   )
   sum_contrasts <- summary(

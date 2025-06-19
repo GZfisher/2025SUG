@@ -1,6 +1,7 @@
 rm(list = ls())
 load("imputation.RData")
-complete_imp <- mice::as.mids(complete_long, .imp="impno", .id="id")
+# Convert to 'mids' object for multiply imputed analysis
+complete_imp <- mice::as.mids(complete_long, .imp = "impno", .id = "id")
 
 covariates <- c("TRT01PN", "BASE", "BLBMIG1N","REGIONN")
 covariates_part <- paste(covariates, collapse = " + ")
@@ -15,14 +16,12 @@ ancova_res <- function(imp, formula, trt_var, ref) {
     # Specify here the group variable over which EMM are desired.
     specs = trt_var,
     weights = "proportional"
-    # Pass the data again so that the factor levels of the arm variable can be inferred.
-    # data = data
   )
   emmeans_contrasts <- emmeans::contrast(
     emmeans_fit,
     # Compare dummy arms versus the control arm.
     method = "trt.vs.ctrl",
-    # Take the arm factor from .ref_group as the control arm.
+    # Take the arm factor from param "ref" as the control arm.
     ref = ref,
     level = 0.95
   )
@@ -35,6 +34,7 @@ ancova_res <- function(imp, formula, trt_var, ref) {
   )
   return(list(contrasts=sum_contrasts, lm_fit=lm_fit))
 }
+
 
 for (vv in seq(2,56,2)) {
   res_r100 <- ancova_res(complete_imp %>% filter(AVISIT==paste0("WEEK",vv)), formula = formula, 

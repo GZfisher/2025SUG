@@ -13,24 +13,26 @@ source("function/Fortran_function.R")
 # Add an indicator variable for imputation number (0 = original data) to the original data
 ori_data <- wide_data %>% mutate(impno = 0)
 
-# Define a function to convert data from wide to long format,
-# and compute AVAL (BASE + CHG) and a unique subject-visit ID
-convert_imp <- function(data, ori_data) {
-  # Combine original and new imputed data
-  complete_all <- rbind(ori_data, data)
+# Function to convert imputed and original (with missing values) data from wide to long format,
+# and compute analysis variables and a unique subject-visit ID
+convert_long <- function(imputed_data, original_data, visit_prefix = "VISIT", subj_col = "SUBJID",
+                        base_col = "BASE", target_var = "CHG", imp_col = "impno") {
+  # Combine original data (with missing values) and imputed data
+  combined <- rbind(original_data, imputed_data)
   
-  # Convert to long format: each row is a subject-visit value
-  complete_long <- complete_all %>%  
+  # Pivot to long format: each row is a subject-visit combination
+  long <- combined %>%
     pivot_longer(
-      cols = starts_with("WEEK"),      # Select columns starting with 'WEEK'
-      names_to = "AVISIT",             # Column name for visit timepoint
-      values_to = "CHG"                # Value: change from baseline
-    ) %>%  
+      cols = starts_with(visit_prefix), # Visit columns (e.g., VISIT1, VISIT2, ...)
+      names_to = "AVISIT",              # Name for visit variable
+      values_to = target_var            # Name for change-from-baseline (or other measure)
+    ) %>%
     mutate(
-      AVAL = BASE + CHG,               # Calculate analysis value
-      id = paste0(SUBJID, AVISIT)      # Generate unique ID for each subject-visit
+      AVAL = !!sym(base_col) + !!sym(target_var),                 # Calculate analysis value
+      id = paste0(!!sym(subj_col), "_", AVISIT),           # Create unique ID per subject-visit
+      AVISITN = gsub(visit_prefix, "", AVISIT)
     )
-  return(complete_long)
+  return(long)
 }
 
 # Select required columns and convert to numeric matrix for imputation
@@ -75,8 +77,11 @@ for (i in 1:length(visit_cols)) {
 # Second step imputation: conditionally impute using formulas constructed above
 complete100 <- step2(mono100_added, 100, 'norm', formula_list, seed = 89757)
 
-# Convert final imputed data to long format for analysis/reporting
-complete_long <- convert_imp(complete100, ori_data)
+# Example usage:
+# original_data should be the initial dataset containing missing values
+# imputed_data is the completed data after imputation steps
+complete_long <- convert_long(imputed_data = complete100, original_data = ori_data,
+                         visit_prefix = "WEEK", subj_col = "SUBJID", base_col = "BASE", target_var = "CHG")
 
 # Set reference levels for treatment variables as required for analysis
 complete_long$TRT01PN <- relevel(factor(complete_long$TRT01PN),ref=2)

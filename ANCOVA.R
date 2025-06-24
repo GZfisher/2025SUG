@@ -1,5 +1,11 @@
 rm(list = ls())
 load("imputation.RData")
+
+library(dplyr)
+# Set reference levels for treatment variables as required for analysis
+complete_long$TRT01PN <- relevel(factor(complete_long$TRT01PN),ref=2)
+complete_long$TRT01P <- relevel(factor(complete_long$TRT01P),ref="PLACEBO")
+
 # Convert to 'mids' object for multiply imputed analysis
 complete_imp <- mice::as.mids(complete_long, .imp = "impno", .id = "id")
 
@@ -47,5 +53,5 @@ for (vv in seq(2,56,2)) {
   }
   print(vv)
 }
-
-# save(res_com100, file = "ancova.RData")
+# diff_r <- res_com100
+# save(diff_r, file = "diff_r.RData")

@@ -40,10 +40,13 @@ convert_long <- function(imputed_data, original_data, visit_prefix = "VISIT", su
 adqs_mono <- data.matrix(wide_data[,c("TRT01PN","REGIONN","BLBMIG1N","BASE",colnames(wide_data)[8:35])])
 
 # First step imputation: user-defined function, generates initial imputed datasets
-mono100 <- step1(adqs_mono, 100, 200, 100, seed = 89757)
+mono100 <- step1(adqs_mono, 100, 200, 100, seed = 13141)
 
 # Merge back key identifying variables to the imputed data
-mono100_added <- cbind(wide_data[,c("SUBJID","TRT01P","DCTFL")], mono100)
+mono100_added <- cbind(wide_data[,c("SUBJID","TRT01P","DCTFL")], mono100)  %>% 
+  mutate(TRT01PN = as.factor(TRT01PN),
+         REGIONN = as.factor(REGIONN),
+         BLBMIG1N = as.factor(BLBMIG1N))
 
 # Define covariate columns for modeling
 cov_cols <- c('TRT01PN','REGIONN','BLBMIG1N','BASE')
@@ -75,17 +78,13 @@ for (i in 1:length(visit_cols)) {
 }
 
 # Second step imputation: conditionally impute using formulas constructed above
-complete100 <- step2(mono100_added, 100, 'norm', formula_list, seed = 89757)
+complete100 <- step2(mono100_added, 100, 'norm', formula_list, seed = 23424)
 
 # Example usage:
 # original_data should be the initial dataset containing missing values
 # imputed_data is the completed data after imputation steps
 complete_long <- convert_long(imputed_data = complete100, original_data = ori_data,
                          visit_prefix = "WEEK", subj_col = "SUBJID", base_col = "BASE", target_var = "CHG")
-
-# Set reference levels for treatment variables as required for analysis
-complete_long$TRT01PN <- relevel(factor(complete_long$TRT01PN),ref=2)
-complete_long$TRT01P <- relevel(factor(complete_long$TRT01P),ref="PLACEBO")
 
 # Save final imputed/long data for further use (commented out here)
 # save(complete_long, complete100, mono100_added, file = "imputation.RData")

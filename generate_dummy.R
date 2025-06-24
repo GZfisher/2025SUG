@@ -56,52 +56,52 @@ long_data <- long_data %>% # mutate(AVAL = ifelse(AVISIT=="WEEK0", BASE, AVAL)) 
 # Save the complete, fully observed data as data_complete
 data_complete <- long_data
 
-# Set the reference level for treatment group (numeric) as group 2
-data_complete$TRT01PN <- relevel(factor(data_complete$TRT01PN), ref = 2)
-
-# Set the reference level for treatment group (label) as "PLACEBO"
-data_complete$TRT01P <- relevel(factor(data_complete$TRT01P), ref = "PLACEBO")
-
-# Ensure BLBMIG1N and REGIONN are factors
-data_complete$BLBMIG1N <- factor(data_complete$BLBMIG1N)
-data_complete$REGIONN <- factor(data_complete$REGIONN)
-
-# use the ANCOVA to get the results
-ancova_nomi <- function(data) {
-  lm_fit <- stats::lm(formula = stats::as.formula("CHG ~ TRT01PN + BASE + BLBMIG1N + REGIONN"), 
-                      data = data)
-  emmeans_fit <- emmeans::emmeans(
-    lm_fit,
-    # Specify here the group variable over which EMM are desired.
-    specs = "TRT01PN",
-    weights = "proportional"
-    # Pass the data again so that the factor levels of the arm variable can be inferred.
-    # data = data
-  )
-  emmeans_contrasts <- emmeans::contrast(
-    emmeans_fit,
-    # Compare dummy arms versus the control arm.
-    method = "trt.vs.ctrl",
-    # Take the arm factor from .ref_group as the control arm.
-    ref = 2,
-    level = 0.95
-  )
-  sum_contrasts <- summary(
-    emmeans_contrasts,
-    # Derive confidence intervals, t-tests and p-values.
-    infer = TRUE,
-    # Do not adjust the p-values for multiplicity.
-    adjust = "none"
-  )
-  return(sum_contrasts)
-}
-
-library(broom)
-
-results_nomi <- data_complete %>% 
-  filter(AVISITN > 0) %>% 
-  group_by(AVISITN) %>% 
-  do(ancova_nomi(data = .))
+# # Set the reference level for treatment group (numeric) as group 2
+# data_complete$TRT01PN <- relevel(factor(data_complete$TRT01PN), ref = 2)
+# 
+# # Set the reference level for treatment group (label) as "PLACEBO"
+# data_complete$TRT01P <- relevel(factor(data_complete$TRT01P), ref = "PLACEBO")
+# 
+# # Ensure BLBMIG1N and REGIONN are factors
+# data_complete$BLBMIG1N <- factor(data_complete$BLBMIG1N)
+# data_complete$REGIONN <- factor(data_complete$REGIONN)
+# 
+# # use the ANCOVA to get the results
+# ancova_nomi <- function(data) {
+#   lm_fit <- stats::lm(formula = stats::as.formula("CHG ~ TRT01PN + BASE + BLBMIG1N + REGIONN"), 
+#                       data = data)
+#   emmeans_fit <- emmeans::emmeans(
+#     lm_fit,
+#     # Specify here the group variable over which EMM are desired.
+#     specs = "TRT01PN",
+#     weights = "proportional"
+#     # Pass the data again so that the factor levels of the arm variable can be inferred.
+#     # data = data
+#   )
+#   emmeans_contrasts <- emmeans::contrast(
+#     emmeans_fit,
+#     # Compare dummy arms versus the control arm.
+#     method = "trt.vs.ctrl",
+#     # Take the arm factor from .ref_group as the control arm.
+#     ref = 2,
+#     level = 0.95
+#   )
+#   sum_contrasts <- summary(
+#     emmeans_contrasts,
+#     # Derive confidence intervals, t-tests and p-values.
+#     infer = TRUE,
+#     # Do not adjust the p-values for multiplicity.
+#     adjust = "none"
+#   )
+#   return(sum_contrasts)
+# }
+# 
+# library(broom)
+# 
+# results_nomi <- data_complete %>% 
+#   filter(AVISITN > 0) %>% 
+#   group_by(AVISITN) %>% 
+#   do(ancova_nomi(data = .))
 
 #### create missing values ####
 subjid <- unique(long_data$SUBJID)
@@ -147,7 +147,10 @@ adqs <- long_data %>%
 library(mice)
 md.pattern(adqs)
 wide_data <- pivot_wider(adqs, id_cols = c(SUBJID, REGIONN, TRT01PN, TRT01P, BLBMIG1N, BASE, DCTFL), 
-                         names_from = AVISIT, values_from = CHG)
+                         names_from = AVISIT, values_from = CHG) %>% 
+  mutate(TRT01PN = as.character(TRT01PN),
+         REGIONN = as.character(REGIONN),
+         BLBMIG1N = as.character(BLBMIG1N))
 md.pattern(wide_data)
 
 # save(adqs, adsl, data_complete, wide_data, file = "dummy.RData")

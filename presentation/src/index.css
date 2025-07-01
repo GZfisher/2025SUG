@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Import presentation styles */
+@import './styles/presentation.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Montserrat', Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --evinova-purple: #7852A9;
+  --evinova-teal: #00B0B9;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #FAFAFA;
+  color: #333333;
+}
+
+/* Scroll snap for slides */
+.slide {
+  scroll-snap-align: start;
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--evinova-purple);
+  outline-offset: 2px;
+}
+
+/* Dark mode disabled for presentation */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+  }
+}

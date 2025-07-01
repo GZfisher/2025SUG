@@ -1,0 +1,359 @@
+/* Presentation Styles */
+/* Base styles for slide and content */
+.slide {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.slide-content {
+  width: 100%;
+  height: 100%;
+}
+
+/* Title styles with enhanced typography */
+.slide-title {
+  margin-bottom: 2rem;
+  position: relative;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* Floating Card Effect */
+.float-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateZ(0); /* Enable GPU acceleration */
+  will-change: transform, box-shadow; /* Optimize for animations */
+}
+
+.float-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* New structured card layout */
+.main-card {
+  border-radius: 12px;
+  overflow: visible !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  background-color: #ffffff;
+  padding: 0; /* No padding on main card */
+}
+
+.title-card {
+  display: inline-block;
+  border-radius: 8px;
+  background-color: white;
+  padding: 10px 24px;
+  margin: 16px 16px 8px 16px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 2;
+}
+
+.content-card {
+  border-radius: 8px;
+  background-color: #fafbfc;
+  margin: 0 16px 16px 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) inset;
+  height: calc(100% - 80px); /* Adjust based on title card height */
+  overflow: auto;
+}
+
+/* Glass morphism effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Control bar for slide navigation */
+.slide-controls {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 100;
+  display: flex;
+  gap: 1rem;
+}
+
+/* Enhanced animation classes */
+.fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.fade-in {
+  animation: fadeIn 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.slide-in-right {
+  animation: slideInRight 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.pop-in {
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Additional presentation-card rules - legacy for compatibility */
+.presentation-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  background-color: #ffffff;
+  padding: 6px; /* Inner padding for all cards */
+}
+
+.presentation-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12), 0 5px 15px rgba(0, 0, 0, 0.06);
+}
+
+/* Add subtle border to cards */
+.presentation-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(250, 122, 171, 0.5), rgba(120, 82, 169, 0.5));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.presentation-card:hover::after {
+  opacity: 1;
+}
+
+/* Feature card with accent */
+.feature-card {
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  background: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  isolation: isolate;
+  padding: 4px; /* Added internal padding */
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-image: linear-gradient(to bottom, #fa7aab, #7852A9);
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+/* Code block styles */
+.code-block {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #292d3e;
+  color: #d0d0d0;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.code-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Progress indicator with subtle shine animation */
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #fa7aab, #7852A9);
+  z-index: 1000;
+  transition: width 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg, 
+    rgba(255,255,255,0) 0%, 
+    rgba(255,255,255,0.5) 50%, 
+    rgba(255,255,255,0) 100%
+  );
+  animation: shine 2s infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes shine {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Enhanced Navigation dots */
+.nav-dots {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 100;
+  padding: 12px 8px;
+  border-radius: 30px;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.nav-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(250, 122, 171, 0.2);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+.nav-dot::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  background: transparent;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.nav-dot.active {
+  background-color: #fa7aab; /* Evinova pink */
+  transform: scale(1.3);
+}
+
+.nav-dot.active::after {
+  background: rgba(250, 122, 171, 0.2);
+  opacity: 1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.nav-dot:hover:not(.active) {
+  transform: scale(1.2);
+  background-color: rgba(120, 82, 169, 0.4);
+}
+
+/* Content emphasis - without background */
+.highlight-text {
+  position: relative;
+  z-index: 1;
+  display: inline;
+  font-weight: 600;
+  color: #fa7aab;
+}
+
+/* Card content wrapper - creates inner margins */
+.card-content-wrapper {
+  padding: 18px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Button styles */
+.action-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.action-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.action-button:hover::after {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 1;
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Force correct MIME types -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Fix base path issues -->
+    <script type="text/javascript">
+      (function() {
+        const baseTag = document.createElement("base");
+        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/") + 1);
+        baseTag.href = baseUrl;
+        document.head.prepend(baseTag);
+        console.log("Base path set to:", baseUrl);
+        
+        /* Add global variable to override Router basename */
+        window.__ROUTER_BASE = "";
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RAGs in AZ Presentation</title>
+    <script type="module" crossorigin src="./assets/index-UfBH7Xpx.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BM0guK7G.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

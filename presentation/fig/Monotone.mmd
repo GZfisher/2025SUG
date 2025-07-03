@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Preprocessing as Missing Data
+    participant Imputer as Monotone Regression
+    participant Output as Final imputed Data
+
+    Preprocessing->>Preprocessing: Receive incomplete data
+    Preprocessing->>Preprocessing: Check for monotone missingness pattern
+    alt Monotone pattern detected
+        Preprocessing->>Imputer: Send data
+    else Not monotone pattern
+        Preprocessing->>Preprocessing: Use other imputation method to make monotone pattern
+        Preprocessing->>Imputer: Send monotone pattern data
+    end
+    Imputer->>Imputer: Sort variables by missingness
+    loop For each remaining variable
+        Imputer->>Imputer: Fit regression with previous variables and impute missing values
+    end
+    Imputer->>Output: Output complete data set

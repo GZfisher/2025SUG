@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Data as Initial Missing Data
+    participant Istep as I-step (Imputation Step)
+    participant Pstep as P-step (Posterior Step)
+    participant Output as Final Imputed Data
+
+    Data->>Istep: Provide initial data
+    loop Until Convergence or Max Iterations
+        Istep->>Istep: Impute missing data using<br>current parameter distribution
+        Istep->>Pstep: Pass imputed complete data
+        Pstep->>Pstep: Bayesian inference<br>update parameter distribution
+        Pstep->>Istep: Pass updated parameters
+    end
+    Istep->>Output: Output completed data and parameters

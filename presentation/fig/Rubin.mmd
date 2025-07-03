@@ -1,0 +1,18 @@
+---
+config:
+  theme: neo
+  themeVariables:
+    fontSize: 18px
+  layout: dagre
+  look: neo
+---
+flowchart TD
+    A["Multiple complete datasets after multiple imputation"] --> B["**Compute estimate** for each dataset"]
+    B --> C@{ label: "Pool estimates using Rubin's Rule" }
+    C --> D1["Pooled estimate mean"] & D2["Calculate **within-imputation** variance"] & D3["Calculate **between-imputation** variance"] & D4["Compute total variance<br>within + adjusted between variance"]
+    D1 --> E["Final pooled estimate<br>and standard error"]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    C@{ shape: rect}
+

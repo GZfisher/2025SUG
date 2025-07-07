@@ -1,5 +1,6 @@
 import streamlit as st
 from utils import create_navigation_buttons
+from streamlit_mermaid import st_mermaid
 
 st.set_page_config(layout="wide")
 # Custom CSS for larger font size

@@ -41,7 +41,7 @@ st.markdown("""
 
     /* Code blocks - often benefit from being slightly smaller than body text for readability of code itself */
     pre, code {
-        font-size: 0.95em !important; /* Slightly smaller than body text for code snippets */
+        font-size: 0.85em !important; /* Slightly smaller than body text for code snippets */
         line-height: 1;
     }
 
@@ -66,8 +66,26 @@ In SAS, handling missing data typically involves a well-established, standardize
 """)
 
 st.image("fig/SAS flow.svg",
-         caption="Figure 1. SAS Workflow for Multiple Imputation and ANCOVA Using MCMC and Monotone Regression",
+         caption="SAS Workflow for Multiple Imputation and ANCOVA Using MCMC and Monotone Regression",
          use_container_width=True)
+st.subheader("Visualizing the Missing Data Imputation Workflow")
+st.markdown("""
+This animation conceptually illustrates the process of transforming a non-monotone missing data pattern into a monotone structure via MCMC, followed by sequential imputation using monotone regression.
+""")
+
+# --- 在这里添加你的 GIF 图片 ---
+st.image(
+    "./fig/missing_data_imputation_process.gif", # 替换为你的 GIF 文件路径
+    caption="From Non-Monotone to Imputed Data: MCMC and Monotone Regression"
+)
+st.markdown("""
+_**Key Steps Shown:**_
+1.  **Initial State:** Non-monotone missing data.
+2.  **MCMC Pre-processing:** Transformation to a monotone missing pattern.
+3.  **Monotone Regression:** Sequential imputation of missing values visit by visit.
+4.  **Final State:** Fully imputed dataset.
+""")
+# --- GIF 添加结束 ---
 
 st.subheader("SAS Example Code for Multiple Imputation")
 st.markdown("A two-step imputation workflow in SAS using generalized code:")
@@ -75,7 +93,7 @@ with st.expander("Show SAS Imputation Code"):
     st.code("""
 /* Step 1: Use MCMC to convert non-monotone missingness to a monotone structure */
 PROC MI DATA=<input_data> NIMPUTE=<num_imputations> SEED=<mcmc_seed> OUT=<mcmc_output>;
-VAR <treatment_group> <categorical_covariate(s)> <baseline_variable> <visit_variables>;
+VAR <treatment_group> <covariate(s)> <baseline_variable> <visit_variables>;
 MCMC CHAIN=SINGLE NBITER=200 NITER=100 IMPUTE=MONOTONE;
 RUN;
 
@@ -88,7 +106,7 @@ MONOTONE REG(<last_visit_variable> = <treatment_group> <categorical_covariate(s)
 RUN;
     """, language="sas")
 
-st.subheader("SAS Example Code for ANCOVA and Rubin’s Rule")
+st.subheader("SAS Example Code for ANCOVA and Rubin's Rule")
 st.markdown("Typical workflow for conducting ANCOVA analysis on multiple imputed datasets in SAS:")
 with st.expander("Show SAS ANCOVA & Pooling Code"):
     st.code("""
@@ -103,18 +121,18 @@ run;
 
 /* Step 2: Pool lsmeans using Rubin's Rule */
 proc mianalyze data=lsmeans_out;
+by <visit_variable> <treatment_group>;
 modeleffects estimate;
 stderr stderr;
 ods output ParameterEstimates=lsmeans_pooled;
-by <visit_variable> <treatment_group>;
 run;
 
 /* Step 3: Pool treatment differences using Rubin's Rule */
 proc mianalyze data=diffs_out;
+by <visit_variable> <treatment_group>;
 modeleffects estimate;
 stderr stderr;
 ods output ParameterEstimates=diffs_pooled;
-by <visit_variable> <treatment_group>;
 run;
     """, language="sas")
 

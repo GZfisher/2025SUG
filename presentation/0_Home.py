@@ -34,11 +34,12 @@ st.markdown("""
     }
     p {
         font-size: 1.2em !important;
+        line-height: 1.5em !important;
     }
     /* 针对顶级列表项 (直接位于 div.stMarkdown ul 或 div.stMarkdown ol 下) */
     li {
         font-size: 1.2em !important;
-        line-height: 1.2em !important;
+        line-height: 1.5em !important;
     }
 
     /* 针对所有更深层嵌套的列表项，让它们恢复 Streamlit 默认的相对大小 */
@@ -49,7 +50,7 @@ st.markdown("""
     div.stMarkdown ol ul li {
         font-size: 0.9em !important; /* 强制嵌套列表项更小，例如 0.9em */
         /* 或者可以尝试：font-size: inherit !important; 让它们继承 */
-        line-height: 1.2em !important;
+        line-height: 1.5em !important;
     }
 
 

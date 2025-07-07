@@ -9,7 +9,7 @@ def get_ordered_pages():
     Returns a list of dictionaries, each containing the page's file path,
     button display title, and URL parameter name.
     """
-    pages_dir = "./pages"
+    pages_dir = "pages"
     # Ensure the 'pages' directory exists
     if not os.path.exists(pages_dir):
         st.error(f"Error: The directory '{pages_dir}' was not found. Please create it and place your page files inside.")
